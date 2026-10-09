@@ -318,6 +318,21 @@ button:focus-visible {
   from { opacity: 0; transform: translateX(24px); }
 }
 
+.credit {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--paper);
+  opacity: 0.85;
+  text-shadow: 0 1px 0 var(--ink), 0 0 8px rgba(0, 0, 0, 0.5);
+}
+
+.credit cite {
+  font-style: italic;
+}
+
 .logo {
   display: block;
   width: auto;
@@ -939,6 +954,9 @@ button:focus-visible {
   }
   .title-tools {
     justify-content: center;
+  }
+  .credit {
+    text-align: center;
   }
 }
 
