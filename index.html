@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flight Control</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="description" content="Draw flight paths with your finger and land every plane. A tribute to the 2009 classic, rebuilt for modern phones.">
+<meta name="theme-color" content="#a5c470">
+<meta name="color-scheme" content="light">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Flight Control">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="fonts/jost-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<!--app-->
+<div id="app" class="is-title">
+  <div id="stage">
+    <svg id="map" aria-hidden="true"><g id="camera"></g></svg>
+    <canvas id="fx" aria-label="Airspace"></canvas>
+  </div>
+  <div id="safe-probe" aria-hidden="true"></div>
+
+  <div id="hud" hidden>
+    <div class="hud-score" aria-live="polite">
+      <span class="hud-label">Landed</span>
+      <span id="score" class="hud-value">0</span>
+    </div>
+    <div class="hud-buttons">
+      <button id="btn-ff" class="round-btn" type="button" aria-pressed="false" aria-label="Fast forward">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6.5v11l7.5-5.5zM12.5 6.5v11L20 12z"/></svg>
+      </button>
+      <button id="btn-pause" class="round-btn" type="button" aria-label="Pause">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5.5" width="4" height="13" rx="1.2"/><rect x="14" y="5.5" width="4" height="13" rx="1.2"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <!-- Title -->
+  <section id="screen-title" class="screen screen-title" aria-label="Main menu">
+    <div class="title-brand">
+      <svg class="logo" viewBox="0 0 380 156" role="img" aria-label="Flight Control">
+        <defs>
+          <path id="logo-route" d="M-10,138 C60,160 140,150 206,128 S318,78 392,104"/>
+        </defs>
+        <use href="#logo-route" class="logo-route-under"/>
+        <use href="#logo-route" class="logo-route"/>
+        <g class="logo-type">
+          <text class="logo-shadow" x="6" y="64">FLIGHT</text>
+          <text class="logo-shadow" x="6" y="122">CONTROL</text>
+          <text class="logo-flight" x="6" y="58">FLIGHT</text>
+          <text class="logo-control" x="6" y="116">CONTROL</text>
+        </g>
+        <g id="logo-plane" class="logo-plane"></g>
+      </svg>
+      <p class="tagline">Draw a path. Land the planes. Keep them apart.</p>
+      <p id="install-tip" class="install-tip" hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11v8.5a1.5 1.5 0 0 0 1.5 1.5h9a1.5 1.5 0 0 0 1.5-1.5V11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <span>For full screen, tap Share, then <b>Add to Home Screen</b>.</span>
+      </p>
+    </div>
+
+    <div class="title-strips">
+      <p class="strips-heading">Choose an airport</p>
+      <ol id="strips" class="strips"></ol>
+    </div>
+
+    <div class="title-tools">
+      <button id="btn-help" class="chip" type="button">How to play</button>
+      <button class="icon-toggle toggle" type="button" data-setting="sound" aria-pressed="true" aria-label="Sound effects" title="Sound effects">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M3.5 9.5h3.6L12 5.4v13.2l-4.9-4.1H3.5z"/><path class="line on" d="M15.4 9.2a4 4 0 0 1 0 5.6M18 6.6a7.6 7.6 0 0 1 0 10.8"/><path class="slash-under" d="M4 4l16 16"/><path class="slash" d="M4 4l16 16"/></svg>
+      </button>
+      <button class="icon-toggle toggle" type="button" data-setting="music" aria-pressed="true" aria-label="Music" title="Music">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="line" d="M9 17.5V6.2l10-2.2v11.5"/><circle class="fill" cx="6.6" cy="17.6" r="2.6"/><circle class="fill" cx="16.6" cy="15.6" r="2.6"/><path class="slash-under" d="M4 4l16 16"/><path class="slash" d="M4 4l16 16"/></svg>
+      </button>
+      <button class="icon-toggle toggle" type="button" data-setting="haptics" aria-pressed="true" aria-label="Haptics" title="Haptics">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect class="line" x="8.2" y="3.5" width="7.6" height="17" rx="2"/><path class="line on" d="M4.6 8.5v7M19.4 8.5v7M1.8 10.5v3M22.2 10.5v3"/><path class="slash-under" d="M4 4l16 16"/><path class="slash" d="M4 4l16 16"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section id="screen-pause" class="screen screen-modal" aria-label="Paused" hidden>
+    <div class="card">
+      <p class="card-kicker">Holding pattern</p>
+      <h2 class="card-title">Paused</h2>
+      <div class="card-actions">
+        <button id="btn-resume" class="btn btn-primary" type="button">Resume</button>
+        <button id="btn-restart" class="btn" type="button">Restart</button>
+        <button id="btn-quit" class="btn" type="button">Menu</button>
+      </div>
+      <div class="card-toggles">
+        <button class="icon-toggle toggle" type="button" data-setting="sound" aria-pressed="true" aria-label="Sound effects" title="Sound effects">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M3.5 9.5h3.6L12 5.4v13.2l-4.9-4.1H3.5z"/><path class="line on" d="M15.4 9.2a4 4 0 0 1 0 5.6M18 6.6a7.6 7.6 0 0 1 0 10.8"/><path class="slash-under" d="M4 4l16 16"/><path class="slash" d="M4 4l16 16"/></svg>
+        </button>
+        <button class="icon-toggle toggle" type="button" data-setting="music" aria-pressed="true" aria-label="Music" title="Music">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="line" d="M9 17.5V6.2l10-2.2v11.5"/><circle class="fill" cx="6.6" cy="17.6" r="2.6"/><circle class="fill" cx="16.6" cy="15.6" r="2.6"/><path class="slash-under" d="M4 4l16 16"/><path class="slash" d="M4 4l16 16"/></svg>
+        </button>
+        <button class="icon-toggle toggle" type="button" data-setting="haptics" aria-pressed="true" aria-label="Haptics" title="Haptics">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect class="line" x="8.2" y="3.5" width="7.6" height="17" rx="2"/><path class="line on" d="M4.6 8.5v7M19.4 8.5v7M1.8 10.5v3M22.2 10.5v3"/><path class="slash-under" d="M4 4l16 16"/><path class="slash" d="M4 4l16 16"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Game over -->
+  <section id="screen-over" class="screen screen-modal" aria-label="Game over" hidden>
+    <div class="card card-report">
+      <div class="report-head">
+        <p class="card-kicker">Incident report</p>
+        <span class="stamp">Collision</span>
+      </div>
+      <div class="report-score">
+        <span class="report-label">Landed</span>
+        <span id="over-score" class="report-value">0</span>
+      </div>
+      <p id="over-best" class="report-best">Best 0</p>
+      <span id="over-record" class="record" hidden>New record</span>
+      <div class="card-actions">
+        <button id="btn-again" class="btn btn-primary" type="button">Fly again</button>
+        <button id="btn-menu" class="btn" type="button">Menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- How to play -->
+  <section id="screen-help" class="screen screen-modal" aria-label="How to play" hidden>
+    <div class="card card-help">
+      <h2 class="card-title">How to play</h2>
+      <ol class="help-steps">
+        <li>
+          <span class="help-art" id="help-art-1"></span>
+          <span><strong>Draw a flight path.</strong> Touch an aircraft and drag. It follows your line.</span>
+        </li>
+        <li>
+          <span class="help-art" id="help-art-2"></span>
+          <span><strong>Match the colours.</strong> Planes land on their runway, from the arrow end. Helicopters land on the pad, from any side.</span>
+        </li>
+        <li>
+          <span class="help-art" id="help-art-3"></span>
+          <span><strong>Keep them apart.</strong> A red ring means two aircraft are too close. One collision ends the game.</span>
+        </li>
+      </ol>
+      <div class="card-actions">
+        <button id="btn-help-done" class="btn btn-primary" type="button">Got it</button>
+      </div>
+    </div>
+  </section>
+</div>
+<!--/app-->
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

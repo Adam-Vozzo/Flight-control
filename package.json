@@ -1,0 +1,17 @@
+{
+  "name": "flight-control",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Draw flight paths and land every plane. A tribute to Firemint's 2009 iPhone classic, rebuilt as an installable web game.",
+  "type": "module",
+  "scripts": {
+    "start": "http-server -c-1 -p 8080 .",
+    "test": "node --test tests/*.test.mjs",
+    "icons": "node scripts/make-icons.mjs",
+    "build:single": "node scripts/build-single.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10",
+    "http-server": "14.1.1"
+  }
+}
