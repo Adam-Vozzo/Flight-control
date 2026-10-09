@@ -24,6 +24,7 @@
   --yellow: #f4bf38;
   --blue: #3e9ad6;
   --pink: #e8679c;
+  --green: #5eb257;
   --green-light: #6cbf6a;
   --grass: #a5c470;
   --scrim: rgba(24, 37, 32, 0.52);
@@ -957,6 +958,32 @@ button:focus-visible {
   }
   .credit {
     text-align: center;
+  }
+}
+
+/* Short portrait screens (iPhone SE and friends): tighten the title. */
+@media (orientation: portrait) and (max-height: 720px) {
+  .screen-title {
+    row-gap: 12px;
+  }
+  .title-brand {
+    padding-top: 0;
+  }
+  .logo {
+    width: auto;
+    height: 104px;
+  }
+  .tagline {
+    display: none;
+  }
+  .install-tip {
+    margin-top: 8px;
+  }
+  .strips {
+    gap: 9px;
+  }
+  .strip {
+    min-height: 58px;
   }
 }
 

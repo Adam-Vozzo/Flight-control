@@ -1,7 +1,7 @@
 // Offline support: the whole game is cached on first visit, then served
 // from the cache while fresh copies download in the background.
 
-const VERSION = 'flight-control-v1';
+const VERSION = 'flight-control-v2';
 const ASSETS = [
   './',
   'index.html',

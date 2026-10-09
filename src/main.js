@@ -312,7 +312,7 @@ function bumpScore(n) {
 
 // ---------------------------------------------------------------- tutorial
 
-const NOUNS = { light: 'plane', jet: 'jet', heavy: 'jumbo jet', heli: 'helicopter', seaplane: 'seaplane' };
+const NOUNS = { light: 'plane', jet: 'jet', heavy: 'jumbo jet', heli: 'helicopter', seaplane: 'seaplane', fighter: 'fighter jet' };
 
 const KIND_WORDS = {
   runway: (c) => `the ${c} runway`,
@@ -452,13 +452,13 @@ function closeHelp() {
   }
 }
 
-const STRIP_COLOR = { airfield: 'var(--yellow)', coast: 'var(--blue)' };
+const STRIP_COLOR = { airfield: 'var(--yellow)', coast: 'var(--blue)', carrier: 'var(--green)' };
 
 function diagramSVG(map) {
   const zones = map.zones;
   let s = '<svg viewBox="-330 -210 660 420" aria-hidden="true">';
   s += '<rect x="-330" y="-210" width="660" height="420" rx="26" fill="#cfdca8"/>';
-  if (map.id === 'coast') s += '<path d="M70,-210 C60,-120 40,-20 60,70 C80,150 105,190 115,210 L330,210 L330,-210Z" fill="#9fcfe0"/>';
+  if (map.diagram) s += map.diagram;
   for (const z of zones) {
     const team = TEAM[z.color];
     if (z.kind === 'pad') {

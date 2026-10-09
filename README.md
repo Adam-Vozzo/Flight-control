@@ -24,7 +24,7 @@ The game plays in either orientation and you can rotate mid-flight. Sound follow
 ## How to play
 
 - **Draw a flight path.** Touch an aircraft and drag. It follows your line, and you can redraw it at any time. A tap without a drag leaves the old path alone.
-- **Match the colours.** Red and yellow planes land on the runway with the same colour, approaching from the end with the arrows and approach lights. Blue helicopters land on the helipad from any side. On the Coast, pink seaplanes land on the buoyed water lane.
+- **Match the colours.** Planes land on the runway with the same colour, approaching from the end with the arrows and approach lights. Blue helicopters land on a helipad from any side. On the Coast, pink seaplanes land on the buoyed water lane; on the Carrier, green fighters land on the angled deck.
 - **Watch the edges.** New arrivals are announced by a badge at the edge of the screen a few seconds before they appear. Aircraft without a path turn back when they reach the edge.
 - **Keep them apart.** A red ring means two aircraft are too close. When a path locks onto its landing zone the aircraft gets a white outline: it is cleared to land and will touch down on its own.
 - Traffic gets busier the longer you last. Use **fast forward** when it is quiet. The game pauses itself when you leave the app.
@@ -36,8 +36,13 @@ The game plays in either orientation and you can rotate mid-flight. Sound follow
 | Jumbo | Fastest | Red runway (it needs the long one) |
 | Helicopter | Slow | Helipad |
 | Seaplane | Medium | Water lane (Coast) |
+| Fighter | Very fast | Carrier deck (Carrier) |
 
-Airports: **Airfield**, the classic two runways and a helipad, and **Coast**, a beach resort with a seaplane lane and a helipad at the end of the pier.
+Airports:
+
+- **Airfield**: the classic two runways and a helipad.
+- **Coast**: a beach resort with a seaplane lane and a helipad at the end of the pier.
+- **Carrier**: open sea, fighters landing on an aircraft carrier, helicopters on either ship and light planes on an island strip. The hardest of the three.
 
 ## Development
 

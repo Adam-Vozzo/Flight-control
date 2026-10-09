@@ -197,5 +197,33 @@ test('every map is self-consistent and spawns playable traffic', () => {
 });
 
 function landKind(type) {
-  return { light: 'runway', jet: 'runway', heavy: 'runway', heli: 'pad', seaplane: 'water' }[type];
+  return { light: 'runway', jet: 'runway', heavy: 'runway', heli: 'pad', seaplane: 'water', fighter: 'runway' }[type];
 }
+
+test('every landing zone on every map can be reached and landed on', () => {
+  const typeFor = { runway: ['light', 'jet', 'heavy', 'fighter'], pad: ['heli'], water: ['seaplane'] };
+  for (const map of Object.values(MAPS)) {
+    for (const aspect of [1.55, 2.3]) {
+      for (const zone of buildZones(map)) {
+        const type = typeFor[zone.kind].find((t) => map.traffic.some((e) => e.type === t && e.color === zone.color));
+        assert.ok(type, `${map.id}/${zone.id}: nothing ever lands here`);
+        const w = createWorld({ map, aspect, seed: 3, spawning: false, separation: false });
+        const b = bounds(w, 12);
+        const inside = (x, y) => [Math.min(b.maxX, Math.max(b.minX, x)), Math.min(b.maxY, Math.max(b.minY, y))];
+        let start;
+        let route;
+        if (zone.kind === 'pad') {
+          start = inside(zone.x + 70, zone.y + 40);
+          route = [[zone.x, zone.y]];
+        } else {
+          start = inside(zone.ax - zone.ux * 90, zone.ay - zone.uy * 90);
+          route = [];
+          for (let s = -60; s <= 20; s += 4) route.push([zone.ax + zone.ux * s, zone.ay + zone.uy * s]);
+        }
+        const a = spawnAircraft(w, { type, color: zone.color, x: start[0], y: start[1], heading: zone.heading ?? 0 });
+        assert.equal(drawTo(w, a, route), true, `${map.id}/${zone.id} at ${aspect}: path never locked on`);
+        assert.equal(run(w, 40, (wd) => wd.landed === 1), true, `${map.id}/${zone.id} at ${aspect}: never landed`);
+      }
+    }
+  }
+});

@@ -529,6 +529,125 @@ function coastArt(prefix) {
   return s;
 }
 
+
+// ---------------------------------------------------------------------------
+// Carrier: open sea, an aircraft carrier with an angled deck for the fighters,
+// a destroyer with a helipad, and an island airstrip for the light planes.
+
+const CARRIER = { x: -60, y: 22, deg: -15 };
+const DESTROYER = { x: 236, y: 112, deg: -15 };
+
+function shipPoint(ship, lx, ly) {
+  const t = (ship.deg * Math.PI) / 180;
+  return { x: ship.x + lx * Math.cos(t) - ly * Math.sin(t), y: ship.y + lx * Math.sin(t) + ly * Math.cos(t) };
+}
+
+const CARRIER_ZONES = [
+  { id: 'green', kind: 'runway', color: 'green', a: shipPoint(CARRIER, -166, 15), b: shipPoint(CARRIER, 44, -19), width: 22, deck: true },
+  { id: 'blue', kind: 'pad', color: 'blue', ...shipPoint(CARRIER, 132, 13), r: 16 },
+  { id: 'blue2', kind: 'pad', color: 'blue', ...shipPoint(DESTROYER, -52, 0), r: 15 },
+  { id: 'yellow', kind: 'runway', color: 'yellow', a: { x: 160, y: -92 }, b: { x: 330, y: -138 }, width: 20 },
+];
+
+const CARRIER_HULL = [[-188, -40], [-70, -64], [36, -52], [112, -34], [176, -12], [192, 3], [160, 32], [60, 40], [-188, 40]];
+const CARRIER_DECK = [[-182, -34], [-70, -57], [34, -46], [110, -29], [170, -9], [183, 3], [156, 27], [60, 34], [-182, 34]];
+const DESTROYER_HULL = [[-76, -13], [30, -15], [62, -7], [80, 0], [62, 7], [30, 15], [-76, 13]];
+
+function wake(len, spread, offset = 0) {
+  return (
+    `<path d="M${offset},-6 Q${offset - len * 0.4},-${spread * 0.4} ${offset - len},-${spread} M${offset},6 Q${offset - len * 0.4},${spread * 0.4} ${offset - len},${spread}" fill="none" stroke="#e9f7f8" stroke-width="4" stroke-linecap="round" opacity="0.45"/>` +
+    `<path d="M${offset},0 L${offset - len * 0.9},0" fill="none" stroke="#e9f7f8" stroke-width="9" stroke-linecap="round" stroke-dasharray="18 14" opacity="0.28"/>`
+  );
+}
+
+function carrierArt(prefix) {
+  const rng = mulberry32(19631014);
+  const z = CARRIER_ZONES;
+  const team = TEAM.green;
+  let s = defs(prefix);
+  s += `<rect x="-1100" y="-800" width="2200" height="1600" fill="url(#${prefix}-ocean)"/>`;
+  s += `<defs><radialGradient id="${prefix}-ocean" cx="0.45" cy="0.45" r="0.7"><stop offset="0" stop-color="#5aaed0"/><stop offset="1" stop-color="#3b88b3"/></radialGradient></defs>`;
+  let waves = '';
+  for (let i = 0; i < 120; i++) {
+    const x = -620 + rng() * 1240;
+    const y = -330 + rng() * 660;
+    if (Math.hypot(x - CARRIER.x, (y - CARRIER.y) * 2.2) < 230) continue;
+    if (Math.hypot((x - 245) / 1.8, y + 118) < 80) continue;
+    waves += `M${n1(x)},${n1(y)} q5,-4 10,0 q5,4 10,0`;
+  }
+  s += `<path d="${waves}" fill="none" stroke="#e9f7f8" stroke-width="1.3" stroke-linecap="round" opacity="0.45"/>`;
+
+  // Island airstrip
+  s += `<path d="${blob(246, -116, 124, rng, 12, 0.12)}" transform="translate(246 -116) scale(1 0.56) translate(-246 116)" fill="#8fd3d5" opacity="0.8"/>`;
+  s += `<path d="${blob(246, -116, 108, rng, 12, 0.12)}" transform="translate(246 -116) scale(1 0.5) translate(-246 116)" fill="${C.sand}" stroke="${C.sandLine}" stroke-width="2.6"/>`;
+  s += `<path d="${blob(250, -116, 92, rng, 12, 0.14)}" transform="translate(250 -116) scale(1 0.42) translate(-250 116)" fill="${C.grass}" stroke="${C.fieldLine}" stroke-width="2.8"/>`;
+  s += runwayArt(z[3]);
+  s += building(300, -96, 30, 16, -15, C.roofTeal, { ribs: 4 });
+  s += trees(rng, 12, { x0: 160, x1: 340, y0: -170, y1: -60 }, (x, y, r) => {
+    const inIsland = ((x - 250) / 84) ** 2 + ((y + 116) / 34) ** 2 < 1;
+    const dx = x - 245;
+    const dy = y + 115;
+    const nearRunway = Math.abs(-dx * 0.2614 - dy * 0.9652) < 22 + r;
+    return !inIsland || nearRunway || (x > 280 && x < 322 && y > -108 && y < -84);
+  }, palm, 7, 10);
+
+  // Destroyer with a helipad on the stern
+  s += `<g transform="translate(${DESTROYER.x} ${DESTROYER.y}) rotate(${DESTROYER.deg})">`;
+  s += wake(150, 40, -76);
+  s += `<polygon points="${pts(DESTROYER_HULL.map(([x, y]) => [x + 3, y + 5]))}" fill="rgba(20,40,60,0.25)"/>`;
+  s += `<polygon points="${pts(DESTROYER_HULL)}" fill="#7f8a90" stroke="${C.ink}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  s += `<rect x="-22" y="-8" width="40" height="16" rx="3" fill="#b9c1c5" stroke="${C.ink}" stroke-width="1.2"/>`;
+  s += `<rect x="-6" y="-5" width="10" height="10" rx="2" fill="#5d666c" stroke="${C.ink}" stroke-width="1"/>`;
+  s += `<circle cx="10" cy="0" r="3" fill="#e9eef0" stroke="${C.ink}" stroke-width="0.9"/>`;
+  s += `<circle cx="44" cy="0" r="5" fill="#9aa4a9" stroke="${C.ink}" stroke-width="1.1"/><line x1="48" y1="0" x2="64" y2="0" stroke="${C.ink}" stroke-width="2" stroke-linecap="round"/>`;
+  s += `</g>`;
+  s += helipadArt(z[2], '#8d989e');
+
+  // The carrier
+  s += `<g transform="translate(${CARRIER.x} ${CARRIER.y}) rotate(${CARRIER.deg})">`;
+  s += wake(300, 70, -188);
+  s += `<polygon points="${pts(CARRIER_HULL.map(([x, y]) => [x + 4, y + 7]))}" fill="rgba(20,40,60,0.28)"/>`;
+  s += `<polygon points="${pts(CARRIER_HULL)}" fill="#59626a" stroke="${C.ink}" stroke-width="1.8" stroke-linejoin="round"/>`;
+  s += `<polygon points="${pts(CARRIER_DECK)}" fill="#7b858c" stroke="#4b545a" stroke-width="1.2" stroke-linejoin="round"/>`;
+  // Elevators and bow catapults
+  s += `<rect x="-60" y="22" width="26" height="12" fill="#6f797f" stroke="#4b545a" stroke-width="1"/>`;
+  s += `<rect x="96" y="22" width="24" height="10" fill="#6f797f" stroke="#4b545a" stroke-width="1"/>`;
+  s += `<path d="M66,10 L176,2 M66,-8 L170,-9" stroke="#e7e2d4" stroke-width="1.4" stroke-dasharray="10 4" opacity="0.8"/>`;
+  // Island superstructure
+  s += `<rect x="30" y="26" width="5" height="5" fill="${C.shadow}"/>`;
+  s += `<g><rect x="28" y="19" width="56" height="15" rx="3" fill="#c7cdd1" stroke="${C.ink}" stroke-width="1.4"/>`;
+  s += `<rect x="46" y="22" width="12" height="9" rx="2" fill="#59626a" stroke="${C.ink}" stroke-width="1"/>`;
+  s += `<circle cx="70" cy="26.5" r="4.6" fill="#e9eef0" stroke="${C.ink}" stroke-width="1"/><line x1="70" y1="22" x2="70" y2="31" stroke="${C.ink}" stroke-width="0.9"/>`;
+  s += `<circle cx="37" cy="26.5" r="2.4" fill="${C.glass}"/></g>`;
+  // Angled landing deck
+  s += `<g transform="translate(-166 15) rotate(-9)">`;
+  s += `<rect x="-14" y="-12" width="232" height="24" fill="#646e75"/>`;
+  s += `<rect x="0" y="-10.4" width="214" height="2.2" fill="${team.fill}"/>`;
+  s += `<rect x="0" y="8.2" width="214" height="2.2" fill="${team.fill}"/>`;
+  for (let x = 62; x < 200; x += 18) s += `<rect x="${x}" y="-0.8" width="10" height="1.6" fill="${C.paint}"/>`;
+  for (const x of [22, 30, 38, 46]) s += `<line x1="${x}" y1="-8" x2="${x}" y2="8" stroke="${C.paint}" stroke-width="1" opacity="0.85"/>`;
+  s += `<rect x="40" y="-21" width="9" height="6" rx="1.5" fill="#f0b43c" stroke="${C.ink}" stroke-width="1"/>`;
+  s += chevrons(team, 22, -2, 2, 8);
+  s += approachLights(team, 30, 100, [56, 88]);
+  s += `</g>`;
+  s += `</g>`;
+  s += helipadArt(z[1], '#7b858c');
+
+  // Escort boats
+  for (const [x, y, r] of [[-330, -150, -20], [420, 30, 160], [-380, 160, 10]]) {
+    s += `<g transform="translate(${x} ${y}) rotate(${r})">${wake(60, 16, -14)}`;
+    s += `<path d="M-14,0 q3,-6 10,-6 h14 q7,0 10,6 q-3,6 -10,6 h-14 q-7,0 -10,-6Z" fill="#9aa4a9" stroke="${C.ink}" stroke-width="1.2"/>`;
+    s += `<rect x="-4" y="-3" width="10" height="6" rx="1.5" fill="#d8dde0" stroke="${C.ink}" stroke-width="0.8"/></g>`;
+  }
+  return s;
+}
+
+const CARRIER_DIAGRAM =
+  '<rect x="-330" y="-210" width="660" height="420" fill="#a9d4e4"/>' +
+  `<ellipse cx="246" cy="-116" rx="104" ry="52" fill="#e7d9a8"/>` +
+  `<g transform="translate(${CARRIER.x} ${CARRIER.y}) rotate(${CARRIER.deg})"><polygon points="${pts(CARRIER_HULL)}" fill="#7b858c"/></g>` +
+  `<g transform="translate(${DESTROYER.x} ${DESTROYER.y}) rotate(${DESTROYER.deg})"><polygon points="${pts(DESTROYER_HULL)}" fill="#7f8a90"/></g>`;
+
 // ---------------------------------------------------------------------------
 
 export const MAPS = {
@@ -589,10 +708,40 @@ export const MAPS = {
     ],
     ground: C.grass,
     art: coastArt,
+    diagram: '<path d="M70,-210 C60,-120 40,-20 60,70 C80,150 105,190 115,210 L330,210 L330,-210Z" fill="#9fcfe0"/>',
+  },
+  carrier: {
+    id: 'carrier',
+    name: 'Carrier',
+    code: 'CVN',
+    blurb: 'Fast jets land on the angled deck. Helicopters on either ship.',
+    traffic: [
+      { type: 'fighter', color: 'green', w: 3.2 },
+      { type: 'heli', color: 'blue', w: 2.4 },
+      { type: 'light', color: 'yellow', w: 2.2 },
+      { type: 'jet', color: 'yellow', w: 1.4, from: 60, ramp: 40 },
+    ],
+    firstArrival: { type: 'fighter', color: 'green' },
+    pace: 0.92,
+    zones: CARRIER_ZONES,
+    gates: [
+      { edge: 'left', at: 0.28 },
+      { edge: 'left', at: 0.72 },
+      { edge: 'right', at: 0.42 },
+      { edge: 'right', at: 0.8 },
+      { edge: 'top', at: 0.22 },
+      { edge: 'top', at: 0.55 },
+      { edge: 'bottom', at: 0.2 },
+      { edge: 'bottom', at: 0.5 },
+      { edge: 'bottom', at: 0.82 },
+    ],
+    ground: '#4a97c0',
+    art: carrierArt,
+    diagram: CARRIER_DIAGRAM,
   },
 };
 
-export const MAP_ORDER = ['airfield', 'coast'];
+export const MAP_ORDER = ['airfield', 'coast', 'carrier'];
 
 /** Full scene markup for a map, ready to drop into an SVG <g>. */
 export function mapSVG(map, prefix = map.id) {

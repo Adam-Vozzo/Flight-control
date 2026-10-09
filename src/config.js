@@ -17,6 +17,7 @@ export const TEAM = {
   yellow: { fill: '#f4bf38', shade: '#c38f17', tint: '#ffe08a', name: 'yellow' },
   blue: { fill: '#3e9ad6', shade: '#276fa3', tint: '#a8dbff', name: 'blue' },
   pink: { fill: '#e8679c', shade: '#b04373', tint: '#ffb7d4', name: 'pink' },
+  green: { fill: '#5eb257', shade: '#3c8638', tint: '#c2f5b9', name: 'green' },
 };
 
 export const AIRCRAFT = {
@@ -25,6 +26,7 @@ export const AIRCRAFT = {
   heavy: { label: 'Jumbo', speed: 33, radius: 16, land: 'runway', landTime: 2.3 },
   heli: { label: 'Helicopter', speed: 15, radius: 11.5, land: 'pad', landTime: 1.9 },
   seaplane: { label: 'Seaplane', speed: 20, radius: 11, land: 'water', landTime: 2.2 },
+  fighter: { label: 'Fighter', speed: 37, radius: 11, land: 'runway', landTime: 1.5 },
 };
 
 export const SIM = {
